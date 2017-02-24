@@ -236,7 +236,6 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
             };
     private CaptureRequest.Builder mCaptureRequestBuilder;
 
-    private ImageButton mRecordImageButton;
     private ImageButton mStillImageButton;
     private boolean mIsRecording = false;
     private boolean mIsTimelapse = false;
@@ -281,43 +280,6 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
                 lockFocus();
             }
         });
-        mRecordImageButton = (ImageButton) findViewById(R.id.videoOnlineImageButton);
-        mRecordImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mIsRecording || mIsTimelapse) {
-                    mChronometer.stop();
-                    mChronometer.setVisibility(View.INVISIBLE);
-                    mIsRecording = false;
-                    mIsTimelapse = false;
-                    mRecordImageButton.setImageResource(R.mipmap.btn_video_online);
-
-                    // Starting the preview prior to stopping recording which should hopefully
-                    // resolve issues being seen in Samsung devices.
-                    startPreview();
-                    mMediaRecorder.stop();
-                    mMediaRecorder.reset();
-
-                    Intent mediaStoreUpdateIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                    mediaStoreUpdateIntent.setData(Uri.fromFile(new File(mVideoFileName)));
-                    sendBroadcast(mediaStoreUpdateIntent);
-
-                } else {
-                    mIsRecording = true;
-                    mRecordImageButton.setImageResource(R.mipmap.btn_video_busy);
-                    checkWriteStoragePermission();
-                }
-            }
-        });
-        mRecordImageButton.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                mIsTimelapse =true;
-                mRecordImageButton.setImageResource(R.mipmap.btn_timelapse);
-                checkWriteStoragePermission();
-                return true;
-            }
-        });
     }
 
     @Override
@@ -351,7 +313,6 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if(mIsRecording || mIsTimelapse) {
                     mIsRecording = true;
-                    mRecordImageButton.setImageResource(R.mipmap.btn_video_busy);
                 }
                 Toast.makeText(this,
                         "Permission successfully granted!", Toast.LENGTH_SHORT).show();

@@ -15,32 +15,11 @@
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/videoOnlineImageButton"
-        android:contentDescription="@string/video_button"
-        android:src="@mipmap/btn_video_online"
-        android:layout_marginBottom="36dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="49dp" />
-
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/cameraImageButton2"
         android:contentDescription="@string/camera_button"
         android:src="@mipmap/btn_camera"
-        android:layout_alignTop="@+id/videoOnlineImageButton"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="57dp" />
-
-    <Chronometer
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/chronometer"
-        android:visibility="invisible"
-        android:textColor="#ff0000"
-        android:textSize="25dp"
-        android:layout_above="@+id/videoOnlineImageButton"
-        android:layout_alignStart="@+id/videoOnlineImageButton" />
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp" />
 
 </RelativeLayout>
