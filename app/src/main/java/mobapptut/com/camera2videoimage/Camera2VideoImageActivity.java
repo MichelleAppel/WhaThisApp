@@ -588,7 +588,6 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
         String prepend = "IMAGE_" + timestamp + "_";
         File imageFile = File.createTempFile(prepend, ".jpg", mImageFolder);
         mImageFileName = imageFile.getAbsolutePath();
-//        return imageFile;
     }
 
     private void checkWriteStoragePermission() {
