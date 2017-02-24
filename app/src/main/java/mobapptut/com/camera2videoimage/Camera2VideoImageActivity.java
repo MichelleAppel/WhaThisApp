@@ -583,12 +583,12 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
         }
     }
 
-    private File createImageFileName() throws IOException {
+    private void createImageFileName() throws IOException {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String prepend = "IMAGE_" + timestamp + "_";
         File imageFile = File.createTempFile(prepend, ".jpg", mImageFolder);
         mImageFileName = imageFile.getAbsolutePath();
-        return imageFile;
+//        return imageFile;
     }
 
     private void checkWriteStoragePermission() {
