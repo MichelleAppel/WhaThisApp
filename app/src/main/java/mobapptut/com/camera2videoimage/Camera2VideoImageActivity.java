@@ -661,7 +661,7 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
                 try {
                     createVideoFileName();
                 } catch (IOException e) {
-                    e.printStackTrace();  
+                    e.printStackTrace();
                 }
                 if(mIsTimelapse || mIsRecording) {
                     startRecord();
