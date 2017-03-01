@@ -1,6 +1,7 @@
 package mobapptut.com.camera2videoimage;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -25,6 +26,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
+import android.speech.RecognizerIntent;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -49,6 +51,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class Camera2VideoImageActivity extends AppCompatActivity {
 
@@ -60,6 +63,8 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
     private static final int STATE_WAIT_LOCK = 1;
     private int mCaptureState = STATE_PREVIEW;
     private TextureView mTextureView;
+    private ImageButton btnSpeak;
+    private final int REQ_CODE_SPEECH_INPUT = 100;
     private TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -86,6 +91,7 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
     private CameraDevice.StateCallback mCameraDeviceStateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(CameraDevice camera) {
+
             mCameraDevice = camera;
             mMediaRecorder = new MediaRecorder();
             if(mIsRecording) {
@@ -273,6 +279,7 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
         mChronometer = (Chronometer) findViewById(R.id.chronometer);
         mTextureView = (TextureView) findViewById(R.id.textureView);
         mStillImageButton = (ImageButton) findViewById(R.id.cameraImageButton2);
+        // Camera part
         mStillImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -280,7 +287,64 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
                 lockFocus();
             }
         });
+
+        //Speech Input
+        btnSpeak = (ImageButton) findViewById(R.id.btnSpeak);
+
+        btnSpeak.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                promptSpeechInput();
+            }
+        });
     }
+
+
+    private void promptSpeechInput() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
+                getString(R.string.speech_prompt));
+        try {
+            startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
+        } catch (ActivityNotFoundException a) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.speech_not_supported),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Receiving speech input
+     * */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case REQ_CODE_SPEECH_INPUT: {
+                if (resultCode == RESULT_OK && null != data) {
+
+                    ArrayList<String> result = data
+                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    System.out.println(result.get(0));
+                    if(result.get(0).equals(R.string.what_is_this)){
+                        // Make photo
+                        checkWriteStoragePermission();
+                        lockFocus();
+                        // Go to intent with specified question
+                    }
+                }
+                break;
+            }
+
+        }
+    }
+
+
 
     @Override
     protected void onResume() {

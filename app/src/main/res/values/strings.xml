@@ -2,4 +2,9 @@
     <string name="app_name">Camera2 Video Image</string>
     <string name="video_button">Video Record Button</string>
     <string name="camera_button">Camera Capture Button</string>
+    <string name="speech_button">Speech input button</string>
+    <string name="what_is_this">Wat is dit</string>
+    <string name="noValidInput">I didn\'t quite get that</string>
+    <string name="speech_prompt">Say something&#8230;</string>
+    <string name="speech_not_supported">Sorry! Your device doesn\'t support speech input</string>
 </resources>
