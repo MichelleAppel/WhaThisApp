@@ -43,7 +43,6 @@ public class DisplayActivity extends AppCompatActivity {
         promptSpeechInput();
 
     }
-
     private void promptSpeechInput() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
