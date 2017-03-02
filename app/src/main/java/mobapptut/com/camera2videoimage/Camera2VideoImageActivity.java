@@ -1,7 +1,6 @@
 package mobapptut.com.camera2videoimage;
 
 import android.Manifest;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,16 +19,13 @@ import android.media.CamcorderProfile;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaRecorder;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
-import android.speech.RecognizerIntent;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -41,17 +37,13 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer; 
-import java.text.SimpleDateFormat;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class Camera2VideoImageActivity extends AppCompatActivity {
 
@@ -63,8 +55,6 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
     private static final int STATE_WAIT_LOCK = 1;
     private int mCaptureState = STATE_PREVIEW;
     private TextureView mTextureView;
-    private ImageButton btnSpeak;
-    private final int REQ_CODE_SPEECH_INPUT = 100;
     private TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -94,12 +84,8 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
 
             mCameraDevice = camera;
             mMediaRecorder = new MediaRecorder();
-            if(mIsRecording) {
-                try {
-                    createVideoFileName();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            if (mIsRecording) {
+
                 startRecord();
                 mMediaRecorder.start();
                 runOnUiThread(new Runnable() {
@@ -136,6 +122,8 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
     private Size mVideoSize;
     private Size mImageSize;
     private ImageReader mImageReader;
+    private byte[] intentBytes;
+
     private final ImageReader.OnImageAvailableListener mOnImageAvailableListener = new
             ImageReader.OnImageAvailableListener() {
                 @Override
@@ -143,6 +131,7 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
                     mBackgroundHandler.post(new ImageSaver(reader.acquireLatestImage()));
                 }
             };
+
     private class ImageSaver implements Runnable {
 
         private final Image mImage;
@@ -155,32 +144,20 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
         public void run() {
             ByteBuffer byteBuffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[byteBuffer.remaining()];
+
             byteBuffer.get(bytes);
+            intentBytes = bytes;
 
-            FileOutputStream fileOutputStream = null;
-            try {
-                fileOutputStream = new FileOutputStream(mImageFileName);
-                fileOutputStream.write(bytes);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                mImage.close();
+            // Start a new intent with the picture
+            Intent pictureTaken = new Intent(Camera2VideoImageActivity.this, DisplayActivity.class);
+            pictureTaken.putExtra("photo",intentBytes);
+            startActivity(pictureTaken);
 
-                Intent mediaStoreUpdateIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                mediaStoreUpdateIntent.setData(Uri.fromFile(new File(mImageFileName)));
-                sendBroadcast(mediaStoreUpdateIntent);
 
-                if(fileOutputStream != null) {
-                    try {
-                        fileOutputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
 
         }
     }
+
     private MediaRecorder mMediaRecorder;
     private Chronometer mChronometer;
     private int mTotalRotation;
@@ -196,7 +173,7 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
                         case STATE_WAIT_LOCK:
                             mCaptureState = STATE_PREVIEW;
                             Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
-                            if(afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
+                            if (afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
                                     afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
                                 Toast.makeText(getApplicationContext(), "AF Locked!", Toast.LENGTH_SHORT).show();
                                 startStillCaptureRequest();
@@ -224,7 +201,7 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
                         case STATE_WAIT_LOCK:
                             mCaptureState = STATE_PREVIEW;
                             Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
-                            if(afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
+                            if (afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
                                     afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
                                 Toast.makeText(getApplicationContext(), "AF Locked!", Toast.LENGTH_SHORT).show();
                                 startStillCaptureRequest();
@@ -252,6 +229,7 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
     private String mImageFileName;
 
     private static SparseIntArray ORIENTATIONS = new SparseIntArray();
+
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 0);
         ORIENTATIONS.append(Surface.ROTATION_90, 90);
@@ -263,8 +241,8 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
 
         @Override
         public int compare(Size lhs, Size rhs) {
-            return Long.signum( (long)(lhs.getWidth() * lhs.getHeight()) -
-                    (long)(rhs.getWidth() * rhs.getHeight()));
+            return Long.signum((long) (lhs.getWidth() * lhs.getHeight()) -
+                    (long) (rhs.getWidth() * rhs.getHeight()));
         }
     }
 
@@ -273,9 +251,6 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera2_video_image);
 
-        createVideoFolder();
-        createImageFolder();
-
         mChronometer = (Chronometer) findViewById(R.id.chronometer);
         mTextureView = (TextureView) findViewById(R.id.textureView);
         mStillImageButton = (ImageButton) findViewById(R.id.cameraImageButton2);
@@ -283,68 +258,26 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
         mStillImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkWriteStoragePermission();
-                lockFocus();
-            }
-        });
-
-        //Speech Input
-        btnSpeak = (ImageButton) findViewById(R.id.btnSpeak);
-
-        btnSpeak.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                promptSpeechInput();
-            }
-        });
-    }
-
-
-    private void promptSpeechInput() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
-                getString(R.string.speech_prompt));
-        try {
-            startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
-        } catch (ActivityNotFoundException a) {
-            Toast.makeText(getApplicationContext(),
-                    getString(R.string.speech_not_supported),
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * Receiving speech input
-     * */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (requestCode) {
-            case REQ_CODE_SPEECH_INPUT: {
-                if (resultCode == RESULT_OK && null != data) {
-
-                    ArrayList<String> result = data
-                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    System.out.println(result.get(0));
-                    if(result.get(0).equals(R.string.what_is_this)){
-                        // Make photo
-                        checkWriteStoragePermission();
+                Thread t = new Thread() {
+                    public void run() {
                         lockFocus();
-                        // Go to intent with specified question
                     }
+                };
+
+                t.start();
+                try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-                break;
+
+
+
             }
+        });
 
-        }
+
     }
-
-
 
     @Override
     protected void onResume() {
@@ -387,14 +320,7 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onPause() {
-        closeCamera();
 
-        stopBackgroundThread();
-
-        super.onPause();
-    }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocas) {
@@ -556,11 +482,7 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
                         public void onCaptureStarted(CameraCaptureSession session, CaptureRequest request, long timestamp, long frameNumber) {
                             super.onCaptureStarted(session, request, timestamp, frameNumber);
 
-                            try {
-                                createImageFileName();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+
                         }
                     };
 
@@ -623,74 +545,6 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
         }
     }
 
-    private void createVideoFolder() {
-        File movieFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-        mVideoFolder = new File(movieFile, "camera2VideoImage");
-        if(!mVideoFolder.exists()) {
-            mVideoFolder.mkdirs();
-        }
-    }
-
-    private File createVideoFileName() throws IOException {
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String prepend = "VIDEO_" + timestamp + "_";
-        File videoFile = File.createTempFile(prepend, ".mp4", mVideoFolder);
-        mVideoFileName = videoFile.getAbsolutePath();
-        return videoFile;
-    }
-
-    private void createImageFolder() {
-        File imageFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        mImageFolder = new File(imageFile, "camera2VideoImage");
-        if(!mImageFolder.exists()) {
-            mImageFolder.mkdirs();
-        }
-    }
-
-    private void createImageFileName() throws IOException {
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String prepend = "IMAGE_" + timestamp + "_";
-        File imageFile = File.createTempFile(prepend, ".jpg", mImageFolder);
-        mImageFileName = imageFile.getAbsolutePath();
-    }
-
-    private void checkWriteStoragePermission() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                try {
-                    createVideoFileName();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if(mIsTimelapse || mIsRecording) {
-                    startRecord();
-                    mMediaRecorder.start();
-                    mChronometer.setBase(SystemClock.elapsedRealtime());
-                    mChronometer.setVisibility(View.VISIBLE);
-                    mChronometer.start();
-                }
-            } else {
-                if(shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    Toast.makeText(this, "app needs to be able to save videos", Toast.LENGTH_SHORT).show();
-                }
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT);
-            }
-        } else {
-            try {
-                createVideoFileName();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if(mIsRecording || mIsTimelapse) {
-                startRecord();
-                mMediaRecorder.start();
-                mChronometer.setBase(SystemClock.elapsedRealtime());
-                mChronometer.setVisibility(View.VISIBLE);
-                mChronometer.start();
-            }
-        }
-    }
 
     private void setupMediaRecorder() throws IOException {
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
