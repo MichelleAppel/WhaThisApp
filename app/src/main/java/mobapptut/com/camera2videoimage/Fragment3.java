@@ -6,10 +6,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,34 +35,37 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 
-public class DisplayActivity extends AppCompatActivity {
+import static android.app.Activity.RESULT_OK;
 
+public class Fragment3 extends Fragment {
     private String speechResult = "";
     private final int REQ_CODE_SPEECH_INPUT = 100;
     private byte[] image;
     String base64image;
     TextView plant_description;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_display);
-
-        Intent PrevScreenIntent = getIntent();
+        getActivity().setContentView(R.layout.activity_display);
+        View frag3view = inflater.inflate(R.layout.frag1, container, false);
+        Intent PrevScreenIntent = getActivity().getIntent();
         String photo = "photo";
         image = PrevScreenIntent.getByteArrayExtra(photo);
         base64image = Base64.encodeToString(image, Base64.NO_WRAP);
 
         //byte[] chartData
-        ImageView imgViewer = (ImageView) findViewById(R.id.chart_image);
+        ImageView imgViewer = (ImageView) getActivity().findViewById(R.id.chart_image);
         Bitmap bm = BitmapFactory.decodeByteArray(image, 0, image.length);
         DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
 
         imgViewer.setMinimumHeight(dm.heightPixels);
         imgViewer.setMinimumWidth(dm.widthPixels);
         imgViewer.setImageBitmap(bm);
         promptSpeechInput();
+        return frag3view;
 
     }
     private void promptSpeechInput() {
@@ -71,7 +78,7 @@ public class DisplayActivity extends AppCompatActivity {
         try {
             startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
         } catch (ActivityNotFoundException a) {
-            Toast.makeText(getApplicationContext(),
+            Toast.makeText(getActivity(),
                     getString(R.string.speech_not_supported),
                     Toast.LENGTH_SHORT).show();
         }
@@ -80,8 +87,7 @@ public class DisplayActivity extends AppCompatActivity {
     /**
      * Receiving speech input
      */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         switch (requestCode) {
@@ -108,10 +114,10 @@ public class DisplayActivity extends AppCompatActivity {
                         }
                     }
                     else {
-                        Toast.makeText(getApplicationContext(),
+                        Toast.makeText(getActivity(),
                                 "Couldn't hear what you  said", Toast.LENGTH_SHORT).show();
-                        Intent intent = getIntent();
-                        finish();
+                        Intent intent = getActivity().getIntent();
+                        getActivity().finish();
                         startActivity(intent);
                     }
                 }
@@ -123,7 +129,7 @@ public class DisplayActivity extends AppCompatActivity {
     // Check if the users speech matches one of the predetermined sentences
     private void analyzePhoto(int query) throws MalformedURLException {
 
-        TextView message = (TextView) findViewById(R.id.textBychart);
+        TextView message = (TextView) getActivity().findViewById(R.id.textBychart);
         switch (query) {
             case 0:
                 message.setText("Dit is een foto!");
@@ -152,7 +158,7 @@ public class DisplayActivity extends AppCompatActivity {
 
     public interface TestPostImageService {
         @POST("image")
-        Call<ImageResponse> postImage(@Body ImageRequestBody imageRequestBody);
+        Call<Fragment3.ImageResponse> postImage(@Body Fragment3.ImageRequestBody imageRequestBody);
     }
 
     class AuthInterceptor implements Interceptor {
@@ -177,7 +183,7 @@ public class DisplayActivity extends AppCompatActivity {
     // Use HTTP request to get info from the image
     private void recollectData() {
         HttpLoggingInterceptor logginInterceptor = new HttpLoggingInterceptor();
-        AuthInterceptor authInterceptor = new AuthInterceptor();
+        Fragment3.AuthInterceptor authInterceptor = new Fragment3.AuthInterceptor();
 
         logginInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder()
@@ -192,11 +198,11 @@ public class DisplayActivity extends AppCompatActivity {
                 .client(client)
                 .build();
 
-        TestPostImageService service = retrofit.create(TestPostImageService.class);
+        Fragment3.TestPostImageService service = retrofit.create(Fragment3.TestPostImageService.class);
 
-        service.postImage(new ImageRequestBody(base64image)).enqueue(new Callback<ImageResponse>() {
+        service.postImage(new Fragment3.ImageRequestBody(base64image)).enqueue(new Callback<Fragment3.ImageResponse>() {
             @Override
-            public void onResponse(Call<ImageResponse> call, Response<ImageResponse> response) {
+            public void onResponse(Call<Fragment3.ImageResponse> call, Response<Fragment3.ImageResponse> response) {
                 Log.d("image RESPONSE: ", response.body().description);
                 if(response.body().description != null){
                     plant_description.setText(response.body().description);
@@ -204,7 +210,7 @@ public class DisplayActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ImageResponse> call, Throwable t) {
+            public void onFailure(Call<Fragment3.ImageResponse> call, Throwable t) {
 
             }
         });
