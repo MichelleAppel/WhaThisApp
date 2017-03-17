@@ -489,17 +489,18 @@ public class Fragment1 extends Fragment {
 
     private void connectCamera() {
         CameraManager cameraManager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
+
         try {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if(ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.CAMERA) ==
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.CAMERA) ==
                         PackageManager.PERMISSION_GRANTED) {
                     cameraManager.openCamera(mCameraId, mCameraDeviceStateCallback, mBackgroundHandler);
                 } else {
-                    if(shouldShowRequestPermissionRationale(android.Manifest.permission.CAMERA)) {
+                    if (shouldShowRequestPermissionRationale(android.Manifest.permission.CAMERA)) {
                         Toast.makeText(getActivity(),
                                 "Video app required access to camera", Toast.LENGTH_SHORT).show();
                     }
-                    requestPermissions(new String[] {android.Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
+                    requestPermissions(new String[]{android.Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
                     }, REQUEST_CAMERA_PERMISSION_RESULT);
                 }
 
