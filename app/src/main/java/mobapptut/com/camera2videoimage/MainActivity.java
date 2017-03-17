@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private class CustomAdapter extends FragmentPagerAdapter {
+    public class CustomAdapter extends FragmentPagerAdapter {
 
         private String fragments [] = {"Fragment 1","Fragment 2"};
 
@@ -76,4 +76,6 @@ public class MainActivity extends AppCompatActivity {
             return fragments[position];
         }
     }
+
+
 }

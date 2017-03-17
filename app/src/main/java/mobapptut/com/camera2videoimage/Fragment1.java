@@ -20,8 +20,10 @@ import android.media.CamcorderProfile;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
@@ -41,12 +43,15 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -61,6 +66,7 @@ public class Fragment1 extends Fragment {
     private static final int STATE_PREVIEW = 0;
     private static final int STATE_WAIT_LOCK = 1;
     private int mCaptureState = STATE_PREVIEW;
+    private String absolutePath = "";
 
     private TextureView mTextureView;
     private Chronometer mChronometer;
@@ -90,6 +96,10 @@ public class Fragment1 extends Fragment {
                 Thread t = new Thread() {
                     public void run() {
                         lockFocus();
+                        Intent goToDisplay = new Intent(getActivity(), DisplayActivity.class);
+                        goToDisplay.putExtra("path", absolutePath);
+                        System.out.println("path1 " + mImageFileName);
+                        startActivity(goToDisplay);
                     }
                 };
 
@@ -99,9 +109,6 @@ public class Fragment1 extends Fragment {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
-
-
             }
         });
 
@@ -123,7 +130,6 @@ public class Fragment1 extends Fragment {
     private Size mVideoSize;
     private Size mImageSize;
     private ImageReader mImageReader;
-    private byte[] intentBytes;
     private boolean mIsTimelapse = false;
 
     private CameraCaptureSession mPreviewCaptureSession;
@@ -149,8 +155,6 @@ public class Fragment1 extends Fragment {
             } else {
                 startPreview();
             }
-            // Toast.makeText(getApplicationContext(),
-            //         "Camera connection made!", Toast.LENGTH_SHORT).show();
         }
 
 
@@ -223,6 +227,8 @@ public class Fragment1 extends Fragment {
             e.printStackTrace();
         }
     }
+
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void startRecord() {
 
@@ -273,6 +279,7 @@ public class Fragment1 extends Fragment {
                 }
             };
 
+
     private class ImageSaver implements Runnable {
 
         private final Image mImage;
@@ -285,24 +292,103 @@ public class Fragment1 extends Fragment {
         public void run() {
             ByteBuffer byteBuffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[byteBuffer.remaining()];
-
             byteBuffer.get(bytes);
-            intentBytes = bytes;
 
-            // Start a new intent with the picture
+            FileOutputStream fileOutputStream = null;
+            try {
+                fileOutputStream = new FileOutputStream(mImageFileName);
+                fileOutputStream.write(bytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                mImage.close();
 
+                Intent mediaStoreUpdateIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                mediaStoreUpdateIntent.setData(Uri.fromFile(new File(mImageFileName)));
+                getActivity().sendBroadcast(mediaStoreUpdateIntent);
 
-            Intent intent = new Intent(getActivity(), DisplayActivity.class);
-            intent.setClass(getActivity(), DisplayActivity.class);
-          //  intent.putExtra("photo",intentBytes);
-//
-            startActivity(intent);
-            getActivity().finish();
+                if (fileOutputStream != null) {
+                    try {
+                        fileOutputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
         }
     }
 
 
+    private void createVideoFolder() {
+        File movieFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+        mVideoFolder = new File(movieFile, "camera2VideoImage");
+        if(!mVideoFolder.exists()) {
+            mVideoFolder.mkdirs();
+        }
+    }
+
+    private File createVideoFileName() throws IOException {
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String prepend = "VIDEO_" + timestamp + "_";
+        File videoFile = File.createTempFile(prepend, ".mp4", mVideoFolder);
+        mVideoFileName = videoFile.getAbsolutePath();
+        return videoFile;
+    }
+
+    private void createImageFolder() {
+        File imageFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        mImageFolder = new File(imageFile, "camera2VideoImage");
+        if(!mImageFolder.exists()) {
+            mImageFolder.mkdirs();
+        }
+    }
+
+    private void createImageFileName() throws IOException {
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String prepend = "IMAGE_" + timestamp + "_";
+        File imageFile = File.createTempFile(prepend, ".jpg", mImageFolder);
+        mImageFileName = imageFile.getAbsolutePath();
+        absolutePath = imageFile.getAbsolutePath();
+    }
+
+    private void checkWriteStoragePermission() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                try {
+                    createVideoFileName();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if(mIsTimelapse || mIsRecording) {
+                    startRecord();
+                    mMediaRecorder.start();
+                    mChronometer.setBase(SystemClock.elapsedRealtime());
+                    mChronometer.setVisibility(View.VISIBLE);
+                    mChronometer.start();
+                }
+            } else {
+                if(shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    Toast.makeText(getActivity(), "app needs to be able to save videos", Toast.LENGTH_SHORT).show();
+                }
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT);
+            }
+        } else {
+            try {
+                createVideoFileName();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(mIsRecording || mIsTimelapse) {
+                startRecord();
+                mMediaRecorder.start();
+                mChronometer.setBase(SystemClock.elapsedRealtime());
+                mChronometer.setVisibility(View.VISIBLE);
+                mChronometer.start();
+            }
+        }
+    }
 
 
 
@@ -350,7 +436,7 @@ public class Fragment1 extends Fragment {
                 }
                 mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class), rotatedWidth, rotatedHeight);
                 mVideoSize = chooseOptimalSize(map.getOutputSizes(MediaRecorder.class), rotatedWidth, rotatedHeight);
-                mImageSize = chooseOptimalSize(map.getOutputSizes(ImageFormat.JPEG), rotatedWidth, rotatedHeight);
+                mImageSize = chooseOptimalSize(map.getOutputSizes(ImageFormat.JPEG), 32, 32);
                 mImageReader = ImageReader.newInstance(mImageSize.getWidth(), mImageSize.getHeight(), ImageFormat.JPEG, 1);
                 mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, mBackgroundHandler);
                 mCameraId = cameraId;
@@ -474,6 +560,8 @@ public class Fragment1 extends Fragment {
         }
     }
 
+
+
     private void startStillCaptureRequest() {
         try {
             if(mIsRecording) {
@@ -490,7 +578,11 @@ public class Fragment1 extends Fragment {
                         public void onCaptureStarted(CameraCaptureSession session, CaptureRequest request, long timestamp, long frameNumber) {
                             super.onCaptureStarted(session, request, timestamp, frameNumber);
 
-
+                            try {
+                                createImageFileName();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     };
 
