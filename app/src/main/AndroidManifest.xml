@@ -24,7 +24,7 @@
         <activity android:name=".DisplayActivity" />
         <activity
             android:name=".WelcomeActivity"
-            android:label="@string/title_activity_welcome"></activity>
+            android:label="@string/title_activity_welcome" />
     </application>
 
 </manifest>
