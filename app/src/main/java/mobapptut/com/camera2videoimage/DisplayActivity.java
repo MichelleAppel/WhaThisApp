@@ -94,71 +94,104 @@ public class DisplayActivity extends AppCompatActivity {
                     speechResult = result.get(0);
 
                     // Check if the users speech matches one of the predetermined sentences
-                    if (speechResult.toLowerCase().contains("wat is")||
-                            speechResult.toLowerCase().contains("what is")){
-                        try {
-                            analyzePhoto(0);
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    else if (speechResult.toLowerCase().contains("kleur")||
-                            speechResult.toLowerCase().contains("color")) {
-                        try {
-                            analyzePhoto(1);
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    else if (speechResult.toLowerCase().contains("naam")||
-                            speechResult.toLowerCase().contains("name")) {
-                        try {
-                            analyzePhoto(2);
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    else if (speechResult.toLowerCase().contains("waar")||
-                            speechResult.toLowerCase().contains("origin")) {
-                        try {
-                            analyzePhoto(3);
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    else if (speechResult.toLowerCase().contains("bloei")||
-                            speechResult.toLowerCase().contains("bloeit")||
-                            speechResult.toLowerCase().contains("bloom")) {
-                        try {
-                            analyzePhoto(4);
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        Toast.makeText(getApplicationContext(),
-                                "Couldn't hear what you  said", Toast.LENGTH_SHORT).show();
-                        Intent intent = getIntent();
-                        finish();
-                        startActivity(intent);
-                    }
+
+                    analyseText(speechResult.toLowerCase());
+
                 }
             }
             break;
         }
     }
 
+
+    private void analyseText(String speechQuery){
+        if (speechQuery.toLowerCase().contains("wat is")||
+                speechQuery.contains("what is")){
+            try {
+                analyzePhoto(0);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (speechQuery.contains("kleur")||
+                speechQuery.contains("color")) {
+            try {
+                analyzePhoto(1);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (speechQuery.contains("naam")||
+                speechQuery.contains("name")) {
+            try {
+                analyzePhoto(2);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (speechQuery.contains("waar")||
+                speechQuery.contains("origin")) {
+            try {
+                analyzePhoto(3);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (speechQuery.contains("bloei")||
+                speechQuery.contains("bloeit")||
+                speechQuery.contains("bloom")) {
+            try {
+                analyzePhoto(4);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (speechQuery.contains("groot")||
+                speechQuery.contains("hoog")||
+                speechQuery.contains("size")||
+                speechQuery.contains("height")) {
+            try {
+                analyzePhoto(4);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            Toast.makeText(getApplicationContext(),
+                    "Couldn't hear what you  said", Toast.LENGTH_SHORT).show();
+            Intent intent = getIntent();
+            finish();
+            startActivity(intent);
+        }
+
+
+    }
+
     // Check if the users speech matches one of the predetermined sentences
     private void analyzePhoto(int query) throws MalformedURLException {
 
         TextView message = (TextView) findViewById(R.id.textBychart);
+        PlantInfo currentPlant = recollectData();
+
         switch (query) {
             case 0:
                 //Plant info recollection
-                recollectData();
+                message.setText(currentPlant.name);
                 break;
             case 1:
-                message.setText("De kleur is nog niet bepaald!");
-                recollectData();
+                message.setText(currentPlant.possibleColors);
+                break;
+            case 2:
+                message.setText(currentPlant.name);
+                break;
+            case 3:
+                message.setText(currentPlant.origin);
+                break;
+            case 4:
+                message.setText(currentPlant.bloom);
+                break;
+            case 5:
+                message.setText(currentPlant.size);
                 break;
         }
 
@@ -206,8 +239,13 @@ public class DisplayActivity extends AppCompatActivity {
             return chain.proceed(newRequest);
         }
     }
+
+
+
     // Use HTTP request to get info from the image
-    private void recollectData() {
+    private PlantInfo recollectData() {
+        final PlantInfo currentPlant = new PlantInfo();
+
         HttpLoggingInterceptor logginInterceptor = new HttpLoggingInterceptor();
         AuthInterceptor authInterceptor = new AuthInterceptor();
 
@@ -231,8 +269,14 @@ public class DisplayActivity extends AppCompatActivity {
             public void onResponse(Call<ImageResponse> call, Response<ImageResponse> response) {
                 if(response.body() != null){
                     // make a plant object with all retrieved data
-                    System.out.println(response.body().name);
                     plantText.setText(response.body().name);
+                    currentPlant.ancientNameMeaning = response.body().ancientNameMeaning;
+                    currentPlant.bloom = response.body().bloom;
+                    currentPlant.genus = response.body().genus;
+                    currentPlant.name = response.body().name;
+                    currentPlant.size = response.body().size;
+                    currentPlant.possibleColors = response.body().possibleColors;
+                    currentPlant.origin = response.body().origin;
                 }
             }
 
@@ -242,6 +286,6 @@ public class DisplayActivity extends AppCompatActivity {
             }
         });
 
-
+    return currentPlant;
     }
 }

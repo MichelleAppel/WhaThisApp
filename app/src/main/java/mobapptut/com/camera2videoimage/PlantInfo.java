@@ -10,20 +10,19 @@ public class PlantInfo {
     String name;
 
 
-        public String getId() {
+    public String getMeaning() {
             return ancientNameMeaning;
         }
-
-        public String getName() {
+    public String getName() {
             return name;
         }
-
-        public String getSize() {
+    public String getSize() {
             return size;
         }
-
-        public String getColors(){ return possibleColors;}
-        public String getBloom(){ return bloom;}
+    public String getOrigin() {return origin;}
+    public  String getGenus() {return genus;}
+    public String getColors(){ return possibleColors;}
+    public String getBloom(){ return bloom;}
 
 
     }
