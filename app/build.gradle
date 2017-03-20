@@ -6,7 +6,7 @@ def loadStringProperty(String name) {
 
 android {
     compileSdkVersion 24
-    buildToolsVersion '25.0.0'
+    buildToolsVersion "24.0.3"
 
     defaultConfig {
         buildConfigField("String", "API_USERNAME", "\"${loadStringProperty("API_USERNAME")}\"")

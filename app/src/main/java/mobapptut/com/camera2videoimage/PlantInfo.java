@@ -1,24 +1,29 @@
 package mobapptut.com.camera2videoimage;
 
 public class PlantInfo {
-        private String id;
-        private String name;
-        private int height;
+    String ancientNameMeaning;
+    String origin;
+    String genus;
+    String bloom;
+    String possibleColors;
+    String size;
+    String name;
 
-        public PlantInfo(String name) {
-            this.name = name;
-        }
 
         public String getId() {
-            return id;
+            return ancientNameMeaning;
         }
 
         public String getName() {
             return name;
         }
 
-        public int getHeight() {
-            return height;
+        public String getSize() {
+            return size;
         }
+
+        public String getColors(){ return possibleColors;}
+        public String getBloom(){ return bloom;}
+
 
     }

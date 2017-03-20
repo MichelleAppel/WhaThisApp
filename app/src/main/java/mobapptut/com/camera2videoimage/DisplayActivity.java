@@ -9,7 +9,6 @@ import android.speech.RecognizerIntent;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +36,7 @@ public class DisplayActivity extends AppCompatActivity {
     private final int REQ_CODE_SPEECH_INPUT = 100;
     private byte[] image;
     String base64image;
+    TextView plantText;
     TextView plant_description;
 
     @Override
@@ -51,6 +51,7 @@ public class DisplayActivity extends AppCompatActivity {
 
         //byte[] chartData
         ImageView imgViewer = (ImageView) findViewById(R.id.chart_image);
+        plantText = (TextView) findViewById(R.id.plantText);
         Bitmap bm = BitmapFactory.decodeByteArray(image, 0, image.length);
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -93,21 +94,47 @@ public class DisplayActivity extends AppCompatActivity {
                     speechResult = result.get(0);
 
                     // Check if the users speech matches one of the predetermined sentences
-                    if (speechResult.toLowerCase().contains("wat is")){
+                    if (speechResult.toLowerCase().contains("wat is")||
+                            speechResult.toLowerCase().contains("what is")){
                         try {
                             analyzePhoto(0);
                         } catch (MalformedURLException e) {
                             e.printStackTrace();
                         }
                     }
-                    else if (speechResult.toLowerCase().contains("kleur")) {
+                    else if (speechResult.toLowerCase().contains("kleur")||
+                            speechResult.toLowerCase().contains("color")) {
                         try {
                             analyzePhoto(1);
                         } catch (MalformedURLException e) {
                             e.printStackTrace();
                         }
                     }
-                    else {
+                    else if (speechResult.toLowerCase().contains("naam")||
+                            speechResult.toLowerCase().contains("name")) {
+                        try {
+                            analyzePhoto(2);
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    else if (speechResult.toLowerCase().contains("waar")||
+                            speechResult.toLowerCase().contains("origin")) {
+                        try {
+                            analyzePhoto(3);
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    else if (speechResult.toLowerCase().contains("bloei")||
+                            speechResult.toLowerCase().contains("bloeit")||
+                            speechResult.toLowerCase().contains("bloom")) {
+                        try {
+                            analyzePhoto(4);
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
                         Toast.makeText(getApplicationContext(),
                                 "Couldn't hear what you  said", Toast.LENGTH_SHORT).show();
                         Intent intent = getIntent();
@@ -126,7 +153,7 @@ public class DisplayActivity extends AppCompatActivity {
         TextView message = (TextView) findViewById(R.id.textBychart);
         switch (query) {
             case 0:
-                message.setText("Dit is een foto!");
+                //Plant info recollection
                 recollectData();
                 break;
             case 1:
@@ -146,8 +173,13 @@ public class DisplayActivity extends AppCompatActivity {
         String image;
     }
     class ImageResponse {
+        String ancientNameMeaning;
+        String origin;
+        String genus;
+        String bloom;
+        String possibleColors;
+        String size;
         String name;
-        String description;
     }
 
     public interface TestPostImageService {
@@ -197,9 +229,10 @@ public class DisplayActivity extends AppCompatActivity {
         service.postImage(new ImageRequestBody(base64image)).enqueue(new Callback<ImageResponse>() {
             @Override
             public void onResponse(Call<ImageResponse> call, Response<ImageResponse> response) {
-                Log.d("image RESPONSE: ", response.body().description);
-                if(response.body().description != null){
-                    plant_description.setText(response.body().description);
+                if(response.body() != null){
+                    // make a plant object with all retrieved data
+                    System.out.println(response.body().name);
+                    plantText.setText(response.body().name);
                 }
             }
 
