@@ -21,9 +21,5 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="50dp" />
-    <ImageButton
-        android:id="@+id/btnSpeak"
-        android:layout_width="wrap_content"
-        android:contentDescription="@string/speech_button"
-        android:layout_height="wrap_content"  />
+
 </RelativeLayout>

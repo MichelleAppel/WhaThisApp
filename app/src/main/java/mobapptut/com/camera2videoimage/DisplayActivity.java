@@ -14,8 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -45,21 +43,10 @@ public class DisplayActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display);
+
         Intent PrevScreenIntent = getIntent();
-        String imagePath = PrevScreenIntent.getStringExtra("path");
-        System.out.println("path = " + imagePath);
-        Bitmap myBitmap = null;
-        File imgFile = new  File(imagePath);
-        if(imgFile.exists()){
-
-            myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-
-            ImageView myImage = (ImageView) findViewById(R.id.chart_image);
-
-            myImage.setImageBitmap(myBitmap);
-
-        }
-        image = getBytesFromBitmap(myBitmap);
+        String photo = "photo";
+        image = PrevScreenIntent.getByteArrayExtra(photo);
         base64image = Base64.encodeToString(image, Base64.NO_WRAP);
 
         //byte[] chartData
@@ -74,14 +61,6 @@ public class DisplayActivity extends AppCompatActivity {
         promptSpeechInput();
 
     }
-
-    public byte[] getBytesFromBitmap(Bitmap bitmap) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-        return stream.toByteArray();
-    }
-
-
     private void promptSpeechInput() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
@@ -229,5 +208,7 @@ public class DisplayActivity extends AppCompatActivity {
 
             }
         });
+
+
     }
 }
