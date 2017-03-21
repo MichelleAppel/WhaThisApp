@@ -163,8 +163,6 @@ public class DisplayActivity extends AppCompatActivity {
             finish();
             startActivity(intent);
         }
-
-
     }
 
     // Check if the users speech matches one of the predetermined sentences

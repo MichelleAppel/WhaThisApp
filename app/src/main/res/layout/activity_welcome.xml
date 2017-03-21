@@ -5,6 +5,7 @@
     android:id="@+id/activity_welcome"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bgGreen"
     tools:context="mobapptut.com.camera2videoimage.WelcomeActivity">
 
     <ImageButton
@@ -15,10 +16,10 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:background="@color/bgGreen"
         android:scaleType="fitStart"
         android:padding="30dp"
-        android:onClick="true"/>
+        android:onClick="true"
+        android:background="@null" />
 
     <TextView
         android:text="Take a picture"
