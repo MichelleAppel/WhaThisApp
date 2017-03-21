@@ -12,6 +12,7 @@ import android.util.DisplayMetrics;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.Random;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -37,7 +38,7 @@ public class DisplayActivity extends AppCompatActivity {
     private byte[] image;
     String base64image;
     TextView plantText;
-    TextView plant_description;
+    TextView serverResponse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,7 @@ public class DisplayActivity extends AppCompatActivity {
         //byte[] chartData
         ImageView imgViewer = (ImageView) findViewById(R.id.chart_image);
         plantText = (TextView) findViewById(R.id.plantText);
+        serverResponse = (TextView) findViewById(R.id.serverResponse);
         Bitmap bm = BitmapFactory.decodeByteArray(image, 0, image.length);
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -107,54 +109,49 @@ public class DisplayActivity extends AppCompatActivity {
     private void analyseText(String speechQuery){
         if (speechQuery.toLowerCase().contains("wat is")||
                 speechQuery.contains("what is")){
-            try {
+
                 analyzePhoto(0);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+
         }
         else if (speechQuery.contains("kleur")||
                 speechQuery.contains("color")) {
-            try {
-                analyzePhoto(1);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+            analyzePhoto(1);
+
         }
         else if (speechQuery.contains("naam")||
                 speechQuery.contains("name")) {
-            try {
-                analyzePhoto(2);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+            analyzePhoto(2);
         }
         else if (speechQuery.contains("waar")||
+                speechQuery.contains("where")||
                 speechQuery.contains("origin")) {
-            try {
-                analyzePhoto(3);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+            analyzePhoto(3);
         }
         else if (speechQuery.contains("bloei")||
                 speechQuery.contains("bloeit")||
                 speechQuery.contains("bloom")) {
-            try {
-                analyzePhoto(4);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+            analyzePhoto(4);
         }
         else if (speechQuery.contains("groot")||
                 speechQuery.contains("hoog")||
                 speechQuery.contains("size")||
                 speechQuery.contains("height")) {
-            try {
-                analyzePhoto(4);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+            analyzePhoto(5);
+        }
+        else if (speechQuery.contains("geslacht")||
+                speechQuery.contains("soort")||
+                speechQuery.contains("familie")||
+                speechQuery.contains("genus")||
+                speechQuery.contains("species")) {
+            analyzePhoto(6);
+        }
+        else if (speechQuery.contains("fun")||
+                speechQuery.contains("feit")||
+                speechQuery.contains("feitje")||
+                speechQuery.contains("weetje")||
+                speechQuery.contains("random")||
+                speechQuery.contains("trivia")) {
+            analyzePhoto(7);
         }
         else {
             Toast.makeText(getApplicationContext(),
@@ -163,36 +160,6 @@ public class DisplayActivity extends AppCompatActivity {
             finish();
             startActivity(intent);
         }
-    }
-
-    // Check if the users speech matches one of the predetermined sentences
-    private void analyzePhoto(int query) throws MalformedURLException {
-
-        TextView message = (TextView) findViewById(R.id.textBychart);
-        PlantInfo currentPlant = recollectData();
-
-        switch (query) {
-            case 0:
-                //Plant info recollection
-                message.setText(currentPlant.name);
-                break;
-            case 1:
-                message.setText(currentPlant.possibleColors);
-                break;
-            case 2:
-                message.setText(currentPlant.name);
-                break;
-            case 3:
-                message.setText(currentPlant.origin);
-                break;
-            case 4:
-                message.setText(currentPlant.bloom);
-                break;
-            case 5:
-                message.setText(currentPlant.size);
-                break;
-        }
-
     }
 
 
@@ -211,6 +178,9 @@ public class DisplayActivity extends AppCompatActivity {
         String possibleColors;
         String size;
         String name;
+        String funfact1;
+        String funfact2;
+        String funfact3;
     }
 
     public interface TestPostImageService {
@@ -241,8 +211,8 @@ public class DisplayActivity extends AppCompatActivity {
 
 
     // Use HTTP request to get info from the image
-    private PlantInfo recollectData() {
-        final PlantInfo currentPlant = new PlantInfo();
+    private void analyzePhoto(final int questionNumber) {
+
 
         HttpLoggingInterceptor logginInterceptor = new HttpLoggingInterceptor();
         AuthInterceptor authInterceptor = new AuthInterceptor();
@@ -268,13 +238,47 @@ public class DisplayActivity extends AppCompatActivity {
                 if(response.body() != null){
                     // make a plant object with all retrieved data
                     plantText.setText(response.body().name);
-                    currentPlant.ancientNameMeaning = response.body().ancientNameMeaning;
-                    currentPlant.bloom = response.body().bloom;
-                    currentPlant.genus = response.body().genus;
-                    currentPlant.name = response.body().name;
-                    currentPlant.size = response.body().size;
-                    currentPlant.possibleColors = response.body().possibleColors;
-                    currentPlant.origin = response.body().origin;
+
+
+                    switch (questionNumber) {
+                        case 0:
+                            //Plant info recollection
+//                            serverResponse.setText(response.body().name);
+                            break;
+                        case 1:
+                            serverResponse.setText(response.body().possibleColors);
+                            break;
+                        case 2:
+//                            serverResponse.setText(response.body().name);
+                            break;
+                        case 3:
+                            serverResponse.setText(response.body().origin);
+                            break;
+                        case 4:
+                            serverResponse.setText(response.body().bloom);
+                            break;
+                        case 5:
+                            serverResponse.setText(response.body().size);
+                            break;
+                        case 6:
+                            serverResponse.setText(response.body().genus);
+                            break;
+                        case 7:
+                            Random rand = new Random();
+                            int choice = rand.nextInt(2)+1;
+                            if ( choice == 1){
+                                serverResponse.setText(response.body().funfact1);
+                            }
+                            if ( choice == 2){
+                                serverResponse.setText(response.body().funfact2);
+                            }
+                            if ( choice == 3){
+                                serverResponse.setText(response.body().funfact3);
+                            }
+                              break;
+
+
+                }
                 }
             }
 
@@ -284,6 +288,5 @@ public class DisplayActivity extends AppCompatActivity {
             }
         });
 
-    return currentPlant;
     }
 }

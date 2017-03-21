@@ -176,7 +176,7 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
                             Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
                             if (afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
                                     afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
-                                Toast.makeText(getApplicationContext(), "AF Locked!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Succesfully taken a picture!", Toast.LENGTH_SHORT).show();
                                 startStillCaptureRequest();
                             }
                             break;
@@ -253,7 +253,6 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera2_video_image);
 
-
         prefs = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
         if (!prefs.contains("welcome")) {
             Intent welcomeActicity = new Intent(Camera2VideoImageActivity.this, WelcomeActivity.class);
@@ -264,6 +263,17 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
             editor.apply();
 
         }
+
+        ImageButton helpButton = (ImageButton)(findViewById(R.id.helpButton));
+        helpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), HelpActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
         mChronometer = (Chronometer) findViewById(R.id.chronometer);
         mTextureView = (TextureView) findViewById(R.id.textureView);
         mStillImageButton = (ImageButton) findViewById(R.id.cameraImageButton2);
@@ -283,13 +293,8 @@ public class Camera2VideoImageActivity extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
-
-
             }
         });
-
-
     }
 
     @Override

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_display"
     android:layout_width="match_parent"
@@ -10,23 +11,39 @@
     android:layout_width="match_parent"
     android:id="@+id/chart_image"
     android:layout_alignParentStart="true"
-    android:layout_height="450dp"
-    android:scaleType="centerCrop" />
+    android:scaleType="centerCrop"
+    android:layout_height="400dp" />
 
+    <ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/imageView"
+        android:layout_below="@+id/plantText">
     <TextView
         android:layout_width="match_parent"
-        android:layout_below="@+id/chart_image"
-        android:layout_height="match_parent"
-        android:id="@+id/plantText"
-        android:layout_alignParentStart="true"
+        android:layout_height="wrap_content"
         android:textColor="@android:color/white"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
-        android:textAlignment="center" />
+        android:id="@+id/serverResponse" /></ScrollView>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/plantText"
+        android:textColor="@android:color/white"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/chart_image"
+        android:layout_toEndOf="@+id/imageView" />
+
+    <ImageView
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/information"
+        android:id="@+id/imageView"
+        android:layout_width="100dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/textBychart" />
+        android:layout_below="@+id/chart_image"
+        android:padding="10dp" />
+
 </RelativeLayout>
