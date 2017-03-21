@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Camera2 Video Image</string>
+    <string name="app_name">WhaThis</string>
     <string name="video_button">Video Record Button</string>
     <string name="camera_button">Camera Capture Button</string>
     <string name="speech_button">Speech input button</string>
